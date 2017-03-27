@@ -5,14 +5,50 @@ namespace Vich\UploaderBundle\Tests\Form\Type;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
+use Symfony\Component\PropertyAccess\PropertyPath;
 use Vich\TestBundle\Entity\Product;
 use Vich\UploaderBundle\Form\Type\VichFileType;
 use Vich\UploaderBundle\Handler\UploadHandler;
+use Vich\UploaderBundle\Mapping\PropertyMappingFactory;
 use Vich\UploaderBundle\Storage\StorageInterface;
 
 class VichFileTypeTest extends TestCase
 {
     const TESTED_TYPE = VichFileType::class;
+
+    /**
+     * @dataProvider configureOptionsDataProvider
+     * @group legacy
+     * @expectedDeprecation The "download_link" option is deprecated since version 1.6 and will be removed in 2.0. You should use "download_uri" instead.
+     */
+    public function testConfigureOptions($options, $resolvedOptions)
+    {
+        $optionsResolver = new OptionsResolver();
+
+        $storage = $this->createMock(StorageInterface::class);
+        $uploadHandler = $this->createMock(UploadHandler::class);
+        $propertyMappingFactory = $this->createMock(PropertyMappingFactory::class);
+        $propertyAccessor = $this->createMock(PropertyAccessor::class);
+
+        $testedType = static::TESTED_TYPE;
+
+        $type = new $testedType($storage, $uploadHandler, $propertyMappingFactory, $propertyAccessor);
+
+        $type->configureOptions($optionsResolver);
+
+        $resolved = $optionsResolver->resolve($options);
+        $this->assertArraySubset($resolvedOptions, $resolved);
+    }
+
+    public function configureOptionsDataProvider()
+    {
+        return [
+            [['download_link' => true], ['download_uri' => true]],
+            [['download_link' => false], ['download_uri' => false]],
+        ];
+    }
 
     /**
      * @dataProvider buildViewDataProvider
@@ -44,10 +80,14 @@ class VichFileTypeTest extends TestCase
             ->method('getName')
             ->will($this->returnValue($field));
 
+        $uploadHandler = $this->createMock(UploadHandler::class);
+        $propertyMappingFactory = $this->createMock(PropertyMappingFactory::class);
+        $propertyAccessor = $this->createMock(PropertyAccessor::class);
+
         $testedType = static::TESTED_TYPE;
 
         $view = new FormView();
-        $type = new $testedType($storage, $this->createMock(UploadHandler::class));
+        $type = new $testedType($storage, $uploadHandler, $propertyMappingFactory, $propertyAccessor);
         $type->buildView($view, $form, $options);
         $this->assertEquals($vars, $view->vars);
     }
@@ -55,22 +95,122 @@ class VichFileTypeTest extends TestCase
     public function buildViewDataProvider()
     {
         $object = new Product();
+        $object->setImageOriginalName('image.jpeg');
+        $object->setTitle('Product1');
 
         return [
             [
                 $object,
-                ['download_link' => true, 'download_uri' => null],
-                ['object' => $object, 'download_uri' => 'resolved-uri', 'value' => null, 'attr' => []],
+                ['download_label' => 'custom label', 'download_uri' => true],
+                [
+                    'object' => $object,
+                    'download_label' => 'custom label',
+                    'download_uri' => 'resolved-uri',
+                    'value' => null,
+                    'attr' => [],
+                ],
             ],
             [
                 $object,
-                ['download_link' => false, 'download_uri' => null],
-                ['object' => $object, 'value' => null, 'attr' => []],
+                ['download_label' => 'download', 'download_uri' => false],
+                [
+                    'object' => $object,
+                    'download_uri' => null,
+                    'value' => null,
+                    'attr' => [],
+                ],
             ],
             [
                 $object,
-                ['download_link' => true, 'download_uri' => 'custom-uri'],
-                ['object' => $object, 'download_uri' => 'custom-uri', 'value' => null, 'attr' => []],
+                [
+                    'download_label' => 'download',
+                    'download_uri' => function (Product $product) {
+                        return '/download/'.$product->getImageOriginalName();
+                    },
+                ],
+                [
+                    'object' => $object,
+                    'download_label' => 'download',
+                    'download_uri' => '/download/image.jpeg',
+                    'value' => null,
+                    'attr' => [],
+                ],
+            ],
+            [
+                $object,
+                ['download_label' => 'download', 'download_uri' => 'custom-uri'],
+                [
+                    'object' => $object,
+                    'download_label' => 'download',
+                    'download_uri' => 'custom-uri',
+                    'value' => null,
+                    'attr' => [],
+                ],
+            ],
+            [
+                $object,
+                //FIXME: mock mapping for this data set
+                ['download_label' => true, 'download_uri' => true],
+                [
+                    'object' => $object,
+                    'download_label' => 'image.jpeg',
+                    'translation_domain' => false,
+                    'download_uri' => 'resolved-uri',
+                    'value' => null,
+                    'attr' => [],
+                ],
+            ],
+            [
+                $object,
+                [
+                    'download_label' => function (Product $product) {
+                        return 'prefix-'.$product->getImageOriginalName();
+                    },
+                    'download_uri' => true,
+                ],
+                [
+                    'object' => $object,
+                    'download_label' => 'prefix-image.jpeg',
+                    'translation_domain' => false,
+                    'download_uri' => 'resolved-uri',
+                    'value' => null,
+                    'attr' => [],
+                ],
+            ],
+            [
+                $object,
+                [
+                    'download_label' => function (Product $product) {
+                        return [
+                            'download_label' => 'prefix-'.$product->getImageOriginalName(),
+                            'translation_domain' => 'messages',
+                        ];
+                    },
+                    'download_uri' => true,
+                ],
+                [
+                    'object' => $object,
+                    'download_label' => 'prefix-image.jpeg',
+                    'translation_domain' => 'messages',
+                    'download_uri' => 'resolved-uri',
+                    'value' => null,
+                    'attr' => [],
+                ],
+            ],
+            [
+                $object,
+                [
+                    'download_label' => new PropertyPath('title'),
+                    'download_uri' => true,
+                ],
+                [
+                    'object' => $object,
+                    'download_label' => $object->getTitle(),
+                    'translation_domain' => false,
+                    'download_uri' => 'resolved-uri',
+                    'value' => null,
+                    'attr' => [],
+                ],
             ],
         ];
     }

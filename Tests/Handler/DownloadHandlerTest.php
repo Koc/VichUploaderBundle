@@ -75,7 +75,7 @@ class DownloadHandlerTest extends TestCase
 
         $response = $this->handler->downloadObject($this->object, 'file_field');
 
-        $this->assertInstanceof('\Symfony\Component\HttpFoundation\StreamedResponse', $response);
+        $this->assertInstanceof('Symfony\Component\HttpFoundation\StreamedResponse', $response);
         $this->assertSame(sprintf('attachment; filename="%s"', $expectedFileName), $response->headers->get('Content-Disposition'));
     }
 
@@ -104,7 +104,7 @@ class DownloadHandlerTest extends TestCase
 
         $response = $this->handler->downloadObject($this->object, 'file_field');
 
-        $this->assertInstanceof('\Symfony\Component\HttpFoundation\StreamedResponse', $response);
+        $this->assertInstanceof('Symfony\Component\HttpFoundation\StreamedResponse', $response);
         $this->assertSame(sprintf('attachment; filename="%s"', $expectedFileName), $response->headers->get('Content-Disposition'));
     }
 
@@ -132,13 +132,13 @@ class DownloadHandlerTest extends TestCase
 
         $response = $this->handler->downloadObject($this->object, 'file_field', null, 'ÉÁŰÚŐPÓÜÉŰÍÍÍÍ$$$$$$$++4334');
 
-        $this->assertInstanceof('\Symfony\Component\HttpFoundation\StreamedResponse', $response);
+        $this->assertInstanceof('Symfony\Component\HttpFoundation\StreamedResponse', $response);
     }
 
     /**
      * @expectedException \Vich\UploaderBundle\Exception\MappingNotFoundException
      */
-    public function testAnExceptionIsThrownIfMappingIsntFound()
+    public function testAnExceptionIsThrownIfMappingIsNotFound()
     {
         $this->factory = $this->getPropertyMappingFactoryMock();
         $this->handler = new DownloadHandler($this->factory, $this->storage);
@@ -149,7 +149,7 @@ class DownloadHandlerTest extends TestCase
     /**
      * @expectedException \Vich\UploaderBundle\Exception\NoFileFoundException
      */
-    public function testAnExceptionIsThrownIfNoFileIsFould()
+    public function testAnExceptionIsThrownIfNoFileIsFound()
     {
         $this->storage
             ->expects($this->once())

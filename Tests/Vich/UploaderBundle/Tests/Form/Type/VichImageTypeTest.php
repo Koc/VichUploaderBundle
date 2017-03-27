@@ -17,33 +17,51 @@ class VichImageTypeTest extends VichFileTypeTest
         return [
             [
                 $object,
-                ['download_link' => true, 'download_uri' => null],
+                [
+                    'download_link' => true,
+                    'download_label' => 'download',
+                    'download_uri' => null,
+                    'image_uri' => null,
+                    'imagine_pattern' => null,
+                ],
                 [
                     'object' => $object,
-                    'show_download_link' => true,
                     'download_uri' => 'resolved-uri',
+                    'show_download_link' => true,
                     'value' => null,
                     'attr' => [],
                 ],
             ],
             [
                 $object,
-                ['download_link' => false, 'download_uri' => null],
+                [
+                    'download_link' => false,
+                    'download_label' => 'download',
+                    'download_uri' => null,
+                    'image_uri' => null,
+                    'imagine_pattern' => null,
+                ],
                 [
                     'object' => $object,
+                    'download_uri' => 'resolved-uri',
                     'show_download_link' => false,
-                    'download_uri' => 'resolved-uri',
                     'value' => null,
                     'attr' => [],
                 ],
             ],
             [
                 $object,
-                ['download_link' => true, 'download_uri' => 'custom-uri'],
+                [
+                    'download_link' => true,
+                    'download_label' => 'download',
+                    'download_uri' => 'custom-uri',
+                    'image_uri' => null,
+                    'imagine_pattern' => null,
+                ],
                 [
                     'object' => $object,
-                    'show_download_link' => true,
                     'download_uri' => 'custom-uri',
+                    'show_download_link' => true,
                     'value' => null,
                     'attr' => [],
                 ],

@@ -1,6 +1,7 @@
-Upgrading from v1.0.0 to master
-===============================
+Upgrading from v1.0.0 to 1.6.0
+==============================
 
+- the form option `download_link` now is deprecated, use `download_uri` instead.
 
 Upgrading from v0.14.0 to v1.0.0
 ================================
@@ -13,7 +14,7 @@ Upgrading from v0.13.0 to v0.14.0
 No BC breaks.
 
 Upgrading from v0.12.0 to v0.13.0
-================================
+=================================
 
 - the `resolvePath` and `resolveUri` Storage methods now take a field name
   instead of a mapping name. The same goes for the UploaderExtension and
@@ -23,7 +24,7 @@ Upgrading from v0.12.0 to v0.13.0
   inferred from the field's name.
 
 Upgrading from v0.11.0 to v0.12.0
-================================
+=================================
 
 - the `storage` configuration paramater changed. It accepts the name of the
   storage engine to use (file_system, gaufrette or flysystem).
@@ -47,7 +48,7 @@ Upgrading from v0.9.0 to v0.10.0
   UploaderHelper `asset` method.
 
 Upgrading from v0.5.0 to 0.6.0
-===============================
+==============================
 
 - `getUriPrefix` default value is now /uploads
 
