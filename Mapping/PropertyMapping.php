@@ -4,64 +4,42 @@ namespace Vich\UploaderBundle\Mapping;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
+use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
 use Vich\UploaderBundle\Naming\DirectoryNamerInterface;
 use Vich\UploaderBundle\Naming\NamerInterface;
 
 /**
- * PropertyMapping.
- *
  * @author Dustin Dobervich <ddobervich@gmail.com>
+ * @author Konstantin Myakshin <koc-dp@yandex.ru>
  */
 class PropertyMapping
 {
-    /**
-     * @var NamerInterface
-     */
     protected $namer;
 
-    /**
-     * @var DirectoryNamerInterface
-     */
     protected $directoryNamer;
 
-    /**
-     * @var array
-     */
     protected $mapping;
 
-    /**
-     * @var string
-     */
     protected $mappingName;
 
-    /**
-     * @var string[]
-     */
-    protected $propertyPaths = [
-        'file' => null,
-        'name' => null,
-        'size' => null,
-        'mimeType' => null,
-        'originalName' => null,
-    ];
+    protected $uploadableField;
 
-    /**
-     * @var PropertyAccess
-     */
     protected $accessor;
 
-    /**
-     * @param string   $filePropertyPath     The path to the "file" property
-     * @param string   $fileNamePropertyPath The path to the "filename" property
-     * @param string[] $propertyPaths        The paths to the "size", "mimeType" and "originalName" properties
-     */
-    public function __construct($filePropertyPath, $fileNamePropertyPath, array $propertyPaths = [])
+    public function __construct(UploadableField $uploadableField, NamerInterface $namer, DirectoryNamerInterface $directoryNamer, array $mapping, string $mappingName, PropertyAccessorInterface $propertyAccessor = null)
     {
-        $this->propertyPaths = array_merge(
-            $this->propertyPaths,
-            ['file' => $filePropertyPath, 'name' => $fileNamePropertyPath],
-            $propertyPaths
-        );
+        $this->uploadableField = $uploadableField;
+        $this->namer = $namer;
+        $this->directoryNamer = $directoryNamer;
+        $this->mapping = $mapping;
+        $this->mappingName = $mappingName;
+        $this->propertyAccessor = $propertyAccessor ?: PropertyAccess::createPropertyAccessor();
+    }
+
+    public function getUploadableField(): UploadableField
+    {
+        return $this->uploadableField;
     }
 
     /**
@@ -69,7 +47,7 @@ class PropertyMapping
      *
      * @param object $obj The object
      *
-     * @return UploadedFile The file
+     * @return UploadedFile|null The file
      */
     public function getFile($obj)
     {
@@ -82,7 +60,7 @@ class PropertyMapping
      * @param object       $obj  The object
      * @param UploadedFile $file The new file
      */
-    public function setFile($obj, $file)
+    public function setFile($obj, UploadedFile $file)
     {
         $this->writeProperty($obj, 'file', $file);
     }
@@ -122,18 +100,16 @@ class PropertyMapping
      */
     public function readProperty($obj, $property)
     {
-        if (!array_key_exists($property, $this->propertyPaths)) {
-            throw new \InvalidArgumentException(sprintf('Unknown property %s', $property));
-        }
+        $propertyPath = $this->uploadableField->getPropertyPath($property);
 
-        if (!$this->propertyPaths[$property]) {
+        if (!$propertyPath) {
             // not configured
             return null;
         }
 
-        $propertyPath = $this->fixPropertyPath($obj, $this->propertyPaths[$property]);
+        $propertyPath = $this->fixPropertyPath($obj, $propertyPath);
 
-        return $this->getAccessor()->getValue($obj, $propertyPath);
+        return $this->propertyAccessor->getValue($obj, $propertyPath);
     }
 
     /**
@@ -147,107 +123,25 @@ class PropertyMapping
      */
     public function writeProperty($obj, $property, $value)
     {
-        if (!array_key_exists($property, $this->propertyPaths)) {
-            throw new \InvalidArgumentException(sprintf('Unknown property %s', $property));
-        }
+        $propertyPath = $this->uploadableField->getPropertyPath($property);
 
-        if (!$this->propertyPaths[$property]) {
+        if (!$propertyPath) {
             // not configured
-            return;
+            return null;
         }
 
-        $propertyPath = $this->fixPropertyPath($obj, $this->propertyPaths[$property]);
-        $this->getAccessor()->setValue($obj, $propertyPath, $value);
+        $propertyPath = $this->fixPropertyPath($obj, $propertyPath);
+        $this->propertyAccessor->setValue($obj, $propertyPath, $value);
     }
 
-    /**
-     * Gets the configured file property name.
-     *
-     * @return string The name
-     */
-    public function getFilePropertyName()
-    {
-        return $this->propertyPaths['file'];
-    }
-
-    /**
-     * Gets the configured filename property name.
-     *
-     * @return string The name
-     */
-    public function getFileNamePropertyName()
-    {
-        return $this->propertyPaths['name'];
-    }
-
-    /**
-     * Gets the configured namer.
-     *
-     * @return NamerInterface|null The namer
-     */
-    public function getNamer()
+    public function getNamer() : NamerInterface
     {
         return $this->namer;
     }
 
-    /**
-     * Sets the namer.
-     *
-     * @param NamerInterface $namer The namer
-     */
-    public function setNamer(NamerInterface $namer)
-    {
-        $this->namer = $namer;
-    }
-
-    /**
-     * Determines if the mapping has a custom namer configured.
-     *
-     * @return bool True if has namer, false otherwise
-     */
-    public function hasNamer()
-    {
-        return null !== $this->namer;
-    }
-
-    /**
-     * Gets the configured directory namer.
-     *
-     * @return DirectoryNamerInterface|null The directory namer
-     */
-    public function getDirectoryNamer()
+    public function getDirectoryNamer() : DirectoryNamerInterface
     {
         return $this->directoryNamer;
-    }
-
-    /**
-     * Sets the directory namer.
-     *
-     * @param DirectoryNamerInterface $directoryNamer The directory namer
-     */
-    public function setDirectoryNamer(DirectoryNamerInterface $directoryNamer)
-    {
-        $this->directoryNamer = $directoryNamer;
-    }
-
-    /**
-     * Determines if the mapping has a custom directory namer configured.
-     *
-     * @return bool True if has directory namer, false otherwise
-     */
-    public function hasDirectoryNamer()
-    {
-        return null !== $this->directoryNamer;
-    }
-
-    /**
-     * Sets the configured configuration mapping.
-     *
-     * @param array $mapping The mapping;
-     */
-    public function setMapping(array $mapping)
-    {
-        $this->mapping = $mapping;
     }
 
     /**
@@ -255,19 +149,9 @@ class PropertyMapping
      *
      * @return string The mapping name
      */
-    public function getMappingName()
+    public function getMappingName() : string
     {
         return $this->mappingName;
-    }
-
-    /**
-     * Sets the configured configuration mapping name.
-     *
-     * @param string $mappingName The mapping name
-     */
-    public function setMappingName($mappingName)
-    {
-        $this->mappingName = $mappingName;
     }
 
     /**
@@ -277,13 +161,9 @@ class PropertyMapping
      *
      * @return string The upload name
      */
-    public function getUploadName($obj)
+    public function getUploadName($obj) : string
     {
-        if (!$this->hasNamer()) {
-            return $this->getFile($obj)->getClientOriginalName();
-        }
-
-        return $this->getNamer()->name($obj, $this);
+        return $this->namer->name($obj, $this);
     }
 
     /**
@@ -293,18 +173,12 @@ class PropertyMapping
      *
      * @return string The upload directory
      */
-    public function getUploadDir($obj)
+    public function getUploadDir($obj) : string
     {
-        if (!$this->hasDirectoryNamer()) {
-            return '';
-        }
-
-        $dir = $this->getDirectoryNamer()->directoryName($obj, $this);
+        $dir = $this->directoryNamer->directoryName($obj, $this);
 
         // strip the trailing directory separator if needed
-        $dir = $dir ? rtrim($dir, '/\\') : $dir;
-
-        return $dir;
+        return rtrim($dir, '/\\');
     }
 
     /**
@@ -312,7 +186,7 @@ class PropertyMapping
      *
      * @return string The configured upload directory
      */
-    public function getUploadDestination()
+    public function getUploadDestination() : string
     {
         return $this->mapping['upload_destination'];
     }
@@ -345,14 +219,5 @@ class PropertyMapping
         }
 
         return $propertyPath[0] === '[' ? $propertyPath : sprintf('[%s]', $propertyPath);
-    }
-
-    protected function getAccessor()
-    {
-        if ($this->accessor !== null) {
-            return $this->accessor;
-        }
-
-        return $this->accessor = PropertyAccess::createPropertyAccessor();
     }
 }

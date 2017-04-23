@@ -103,4 +103,13 @@ class UploadableField
     {
         return $this->originalName;
     }
+
+    public function getPropertyPath($property)
+    {
+        if (!property_exists($this, $property)) {
+            throw new \InvalidArgumentException(sprintf('Unknown property %s', $property));
+        }
+
+        return $this->$property;
+    }
 }
