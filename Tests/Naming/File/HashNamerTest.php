@@ -1,8 +1,8 @@
 <?php
 
-namespace Vich\UploaderBundle\Tests\Naming;
+namespace Vich\UploaderBundle\Tests\Naming\File;
 
-use Vich\UploaderBundle\Naming\HashNamer as BaseHashNamer;
+use Vich\UploaderBundle\Naming\File\HashNamer as BaseHashNamer;
 use Vich\UploaderBundle\Tests\DummyEntity;
 use Vich\UploaderBundle\Tests\TestCase;
 
@@ -49,8 +49,7 @@ class HashNamerTest extends TestCase
             ->will($this->returnValue($file));
 
         $namer = new HashNamer();
-        $namer->configure(['algorithm' => $algorithm, 'length' => $length]);
 
-        $this->assertSame($expectedFileName, $namer->name($entity, $mapping));
+        $this->assertSame($expectedFileName, $namer->name($entity, $mapping, ['algorithm' => $algorithm, 'length' => $length]));
     }
 }

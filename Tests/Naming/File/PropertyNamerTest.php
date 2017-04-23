@@ -1,14 +1,12 @@
 <?php
 
-namespace Vich\UploaderBundle\Tests\Naming;
+namespace Vich\UploaderBundle\Tests\Naming\File;
 
-use Vich\UploaderBundle\Naming\PropertyNamer;
+use Vich\UploaderBundle\Naming\File\PropertyNamer;
 use Vich\UploaderBundle\Tests\DummyEntity;
 use Vich\UploaderBundle\Tests\TestCase;
 
 /**
- * PropertyNamerTest.
- *
  * @author Kévin Gomez <contact@kevingomez.fr>
  */
 class PropertyNamerTest extends TestCase
@@ -47,9 +45,11 @@ class PropertyNamerTest extends TestCase
             ->will($this->returnValue($file));
 
         $namer = new PropertyNamer();
-        $namer->configure(['property' => $propertyName, 'transliterate' => $transliterate]);
 
-        $this->assertSame($expectedFileName, $namer->name($entity, $mapping));
+        $this->assertSame(
+            $expectedFileName,
+            $namer->name($entity, $mapping, ['property' => $propertyName, 'transliterate' => $transliterate])
+        );
     }
 
     /**
@@ -61,9 +61,8 @@ class PropertyNamerTest extends TestCase
         $mapping = $this->getPropertyMappingMock();
 
         $namer = new PropertyNamer();
-        $namer->configure(['property' => 'nonExistentProperty']);
 
-        $namer->name($entity, $mapping);
+        $namer->name($entity, $mapping, ['property' => 'nonExistentProperty']);
     }
 
     /**
@@ -74,21 +73,7 @@ class PropertyNamerTest extends TestCase
         $mapping = $this->getPropertyMappingMock();
         $namer = new PropertyNamer();
 
-        $namer->configure(['property' => 'someProperty']);
-
-        $namer->name(new DummyEntity(), $mapping);
-    }
-
-    /**
-     * @expectedException \LogicException
-     * @expectedExceptionMessage The property to use can not be determined. Did you call the configure() method?
-     */
-    public function testNamerNeedsToBeConfigured()
-    {
-        $mapping = $this->getPropertyMappingMock();
-        $namer = new PropertyNamer();
-
-        $namer->name(new DummyEntity(), $mapping);
+        $namer->name(new DummyEntity(), $mapping, ['property' => 'someProperty']);
     }
 
     /**

@@ -360,7 +360,7 @@ class PropertyMappingFactoryTest extends TestCase
             ],
         ];
 
-        $namer = $this->createMock('Vich\UploaderBundle\Naming\NamerInterface');
+        $namer = $this->createMock('Vich\UploaderBundle\Naming\Namer');
         $directoryNamer = $this->createMock('Vich\UploaderBundle\Naming\DirectoryNamerInterface');
 
         $this->container

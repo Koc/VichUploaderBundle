@@ -24,7 +24,5 @@ trait FileExtensionTrait
         if ($extension = $file->guessExtension()) {
             return $extension;
         }
-
-        return;
     }
 }

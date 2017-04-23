@@ -3,12 +3,11 @@
 namespace Vich\UploaderBundle\Mapping\Annotation;
 
 /**
- * UploadableField.
- *
  * @Annotation
  * @Target({"PROPERTY"})
  *
  * @author Dustin Dobervich <ddobervich@gmail.com>
+ * @author Konstantin Myakshin <koc-dp@yandex.ru>
  */
 class UploadableField
 {
@@ -20,8 +19,7 @@ class UploadableField
     /**
      * @var string
      */
-    protected $fileNameProperty;
-    //TODO: replace "fileNameProperty" with just "name"
+    protected $name;
 
     /**
      * @var string
@@ -60,28 +58,18 @@ class UploadableField
         }
     }
 
-    /**
-     * Gets the mapping name.
-     *
-     * @return string The mapping name
-     */
-    public function getMapping()
+    public function getMapping() : string
     {
         return $this->mapping;
     }
 
-    /**
-     * Gets the file name property.
-     *
-     * @return string The file name property
-     */
-    public function getFileNameProperty()
+    public function getName() : string
     {
-        return $this->fileNameProperty;
+        return $this->name;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getSize()
     {
@@ -89,7 +77,7 @@ class UploadableField
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getMimeType()
     {
@@ -97,7 +85,7 @@ class UploadableField
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getOriginalName()
     {

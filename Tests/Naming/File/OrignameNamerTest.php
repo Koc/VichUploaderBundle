@@ -1,13 +1,11 @@
 <?php
 
-namespace Vich\UploaderBundle\Tests\Naming;
+namespace Vich\UploaderBundle\Tests\Naming\File;
 
-use Vich\UploaderBundle\Naming\OrignameNamer;
+use Vich\UploaderBundle\Naming\File\OrignameNamer;
 use Vich\UploaderBundle\Tests\TestCase;
 
 /**
- * OrignameNamerTest.
- *
  * @author Ivan Borzenkov <ivan.borzenkov@gmail.com>
  */
 class OrignameNamerTest extends TestCase

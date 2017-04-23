@@ -1,13 +1,11 @@
 <?php
 
-namespace Vich\UploaderBundle\Tests\Naming;
+namespace Vich\UploaderBundle\Tests\Naming\File;
 
-use Vich\UploaderBundle\Naming\UniqidNamer;
+use Vich\UploaderBundle\Naming\File\UniqidNamer;
 use Vich\UploaderBundle\Tests\TestCase;
 
 /**
- * UniqidNamerTest.
- *
  * @author Emmanuel Vella <vella.emmanuel@gmail.com>
  */
 class UniqidNamerTest extends TestCase
@@ -16,10 +14,10 @@ class UniqidNamerTest extends TestCase
     {
         return [
             //    original_name,    guessed_extension,  pattern
-            ['lala.jpeg',      null,               '/[a-z0-9]{13}.jpeg/'],
-            ['lala.mp3',       'mpga',             '/[a-z0-9]{13}.mp3/'],
-            ['lala',           'mpga',             '/[a-z0-9]{13}.mpga/'],
-            ['lala',           null,               '/[a-z0-9]{13}/'],
+            ['lala.jpeg', null, '/[a-z0-9]{13}.jpeg/'],
+            ['lala.mp3', 'mpga', '/[a-z0-9]{13}.mp3/'],
+            ['lala', 'mpga', '/[a-z0-9]{13}.mpga/'],
+            ['lala', null, '/[a-z0-9]{13}/'],
         ];
     }
 
@@ -50,6 +48,6 @@ class UniqidNamerTest extends TestCase
 
         $namer = new UniqidNamer();
 
-        $this->assertRegExp($pattern, $namer->name($entity, $mapping));
+        $this->assertRegExp($pattern, $namer->name($entity, $mapping, []));
     }
 }

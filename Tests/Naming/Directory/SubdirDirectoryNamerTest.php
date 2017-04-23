@@ -1,8 +1,8 @@
 <?php
 
-namespace Vich\UploaderBundle\Tests\Naming;
+namespace Vich\UploaderBundle\Tests\Naming\Directory;
 
-use Vich\UploaderBundle\Naming\SubdirDirectoryNamer;
+use Vich\UploaderBundle\Naming\Directory\SubdirDirectoryNamer;
 use Vich\UploaderBundle\Tests\DummyEntity;
 use Vich\UploaderBundle\Tests\TestCase;
 
@@ -37,8 +37,7 @@ class SubdirDirectoryNamerTest extends TestCase
             ->will($this->returnValue($fileName));
 
         $namer = new SubdirDirectoryNamer();
-        $namer->configure(['chars_per_dir' => $charsPerDir, 'dirs' => $dirs]);
 
-        $this->assertSame($expectedFileName, $namer->directoryName($entity, $mapping));
+        $this->assertSame($expectedFileName, $namer->name($entity, $mapping, ['chars_per_dir' => $charsPerDir, 'dirs' => $dirs]));
     }
 }
