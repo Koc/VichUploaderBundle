@@ -65,7 +65,7 @@ class VichFileType extends AbstractType
         $resolver->setAllowedTypes('error_bubbling', 'bool');
 
         $downloadUriNormalizer = function (Options $options, $downloadUri) {
-            if (isset($options['download_link'])) {
+            if (null !== $options['download_link']) {
                 @trigger_error('The "download_link" option is deprecated since version 1.6 and will be removed in 2.0. You should use "download_uri" instead.', E_USER_DEPRECATED);
 
                 return $options['download_link'];

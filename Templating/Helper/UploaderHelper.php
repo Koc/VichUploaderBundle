@@ -45,7 +45,7 @@ class UploaderHelper extends Helper
      * @param string       $fieldName The field name
      * @param string       $className The object's class. Mandatory if $obj can't be used to determine it
      *
-     * @return string The public asset path
+     * @return string|null The public asset path or null if file not stored
      */
     public function asset($obj, $fieldName, $className = null)
     {

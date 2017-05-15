@@ -42,9 +42,9 @@ If set to `true`, download uri will automatically resolved using storage.
 Can be string
 
 ```php
-use Vich\UploaderBundle\Form\Type\VichFileType;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
-$builder->add('genericFile', VichFileType::class, [
+$builder->add('genericFile', VichImageType::class, [
     'download_uri' => $router->generateUrl('acme_download_image', $product->getId()),
 ]);
 
@@ -53,9 +53,9 @@ $builder->add('genericFile', VichFileType::class, [
 Can be callable
 
 ```php
-use Vich\UploaderBundle\Form\Type\VichFileType;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
-$builder->add('genericFile', VichFileType::class, [
+$builder->add('genericFile', VichImageType::class, [
     'download_uri' => function (Product $product) use ($router) {
         return $router->generateUrl('acme_download_image', $product->getId());
     },
@@ -71,9 +71,9 @@ If set to `true`, download label will use original file name.
 
 Can be string 
 ```php
-use Vich\UploaderBundle\Form\Type\VichFileType;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
-$builder->add('genericFile', VichFileType::class, [
+$builder->add('genericFile', VichImageType::class, [
     'download_label' => 'download_file',
 ]);
 
@@ -82,9 +82,9 @@ $builder->add('genericFile', VichFileType::class, [
 Can be callable
 
 ```php
-use Vich\UploaderBundle\Form\Type\VichFileType;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
-$builder->add('genericFile', VichFileType::class, [
+$builder->add('genericFile', VichImageType::class, [
     'download_label' => function (Product $product) {
         return $product->getTitle();
     },
@@ -95,9 +95,9 @@ $builder->add('genericFile', VichFileType::class, [
 Can be property path 
 ```php
 use Symfony\Component\PropertyAccess\PropertyPath;
-use Vich\UploaderBundle\Form\Type\VichFileType;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
-$builder->add('genericFile', VichFileType::class, [
+$builder->add('genericFile', VichImageType::class, [
     'download_label' => new PropertyPath('title'),
 ]);
 
@@ -112,9 +112,9 @@ If set to `true`, download uri will automatically resolved using storage.
 Can be string
 
 ```php
-use Vich\UploaderBundle\Form\Type\VichFileType;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
-$builder->add('genericFile', VichFileType::class, [
+$builder->add('genericFile', VichImageType::class, [
     'image_uri' => 'full uri for image',
 ]);
 
@@ -123,9 +123,9 @@ $builder->add('genericFile', VichFileType::class, [
 Can be callable
 
 ```php
-use Vich\UploaderBundle\Form\Type\VichFileType;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
-$builder->add('genericFile', VichFileType::class, [
+$builder->add('genericFile', VichImageType::class, [
     'image_uri' => function (Product $product) use ($cacheManager) {
         //TODO: Add example with LiipImagine integration
         return '';
@@ -143,9 +143,9 @@ If set, image will automatically transformed using [LiipImagineBundle](https://g
 Example
 
 ```php
-use Vich\UploaderBundle\Form\Type\VichFileType;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
-$builder->add('photo', VichFileType::class, [
+$builder->add('photo', VichImageType::class, [
     'imagine_pattern' => 'product_photo_320x240',
 ]);
 

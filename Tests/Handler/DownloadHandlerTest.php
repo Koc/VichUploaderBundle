@@ -2,8 +2,10 @@
 
 namespace Vich\UploaderBundle\Tests\Handler;
 
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Vich\TestBundle\Entity\Product;
 use Vich\UploaderBundle\Handler\DownloadHandler;
-use Vich\UploaderBundle\Tests\DummyEntity;
+use Vich\UploaderBundle\Storage\StorageInterface;
 use Vich\UploaderBundle\Tests\TestCase;
 
 /**
@@ -13,16 +15,22 @@ class DownloadHandlerTest extends TestCase
 {
     protected $factory;
     protected $storage;
+    /**
+     * @var Product
+     */
     protected $object;
+    /**
+     * @var DownloadHandler
+     */
     protected $handler;
     protected $mapping;
 
     public function setUp()
     {
         $this->factory = $this->getPropertyMappingFactoryMock();
-        $this->storage = $this->createMock('Vich\UploaderBundle\Storage\StorageInterface');
+        $this->storage = $this->createMock(StorageInterface::class);
         $this->mapping = $this->getPropertyMappingMock();
-        $this->object = new DummyEntity();
+        $this->object = new Product();
 
         $this->handler = new DownloadHandler($this->factory, $this->storage);
         $this->factory
@@ -47,8 +55,7 @@ class DownloadHandlerTest extends TestCase
      */
     public function testDownloadObject($fileName, $expectedFileName)
     {
-        $file = $this->getMockBuilder('Symfony\Component\HttpFoundation\File\UploadedFile')
-            ->disableOriginalConstructor()->getMock();
+        $file = $this->getUploadedFileMock();
 
         $this->mapping
             ->expects($this->once())
@@ -75,7 +82,7 @@ class DownloadHandlerTest extends TestCase
 
         $response = $this->handler->downloadObject($this->object, 'file_field');
 
-        $this->assertInstanceof('Symfony\Component\HttpFoundation\StreamedResponse', $response);
+        $this->assertInstanceOf(StreamedResponse::class, $response);
         $this->assertSame(sprintf('attachment; filename="%s"', $expectedFileName), $response->headers->get('Content-Disposition'));
     }
 
@@ -104,14 +111,44 @@ class DownloadHandlerTest extends TestCase
 
         $response = $this->handler->downloadObject($this->object, 'file_field');
 
-        $this->assertInstanceof('Symfony\Component\HttpFoundation\StreamedResponse', $response);
+        $this->assertInstanceOf(StreamedResponse::class, $response);
         $this->assertSame(sprintf('attachment; filename="%s"', $expectedFileName), $response->headers->get('Content-Disposition'));
+    }
+
+    public function testDownloadObjectCallOriginalName()
+    {
+        $this->object->setImageOriginalName('original-name.jpeg');
+
+        $this->mapping
+            ->expects($this->once())
+            ->method('readProperty')
+            ->with($this->object, 'originalName')
+            ->will($this->returnValue($this->object->getImageOriginalName()));
+
+        $this->mapping
+            ->expects($this->once())
+            ->method('getFile')
+            ->with($this->object)
+            ->will($this->returnValue('something not null'));
+
+        $this->storage
+            ->expects($this->once())
+            ->method('resolveStream')
+            ->with($this->object, 'file_field')
+            ->will($this->returnValue('something not null'));
+
+        $response = $this->handler->downloadObject($this->object, 'file_field', null, true);
+
+        $this->assertInstanceOf(StreamedResponse::class, $response);
+        $this->assertSame(
+            sprintf('attachment; filename="%s"', $this->object->getImageOriginalName()),
+            $response->headers->get('Content-Disposition')
+        );
     }
 
     public function testNonAsciiFilenameIsTransliterated()
     {
-        $file = $this->getMockBuilder('Symfony\Component\HttpFoundation\File\UploadedFile')
-            ->disableOriginalConstructor()->getMock();
+        $file = $this->getUploadedFileMock();
 
         $this->mapping
             ->expects($this->once())
@@ -132,7 +169,7 @@ class DownloadHandlerTest extends TestCase
 
         $response = $this->handler->downloadObject($this->object, 'file_field', null, 'ÉÁŰÚŐPÓÜÉŰÍÍÍÍ$$$$$$$++4334');
 
-        $this->assertInstanceof('Symfony\Component\HttpFoundation\StreamedResponse', $response);
+        $this->assertInstanceOf(StreamedResponse::class, $response);
     }
 
     /**

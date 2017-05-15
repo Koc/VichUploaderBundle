@@ -32,11 +32,11 @@ class VichImageType extends VichFileType
         parent::configureOptions($resolver);
 
         $resolver->setDefaults([
-            'image_uri' => null,
+            'image_uri' => true,
             'imagine_pattern' => null,
         ]);
 
-        $resolver->setAllowedTypes('image_uri', ['null', 'bool', 'string', 'callable']);
+        $resolver->setAllowedTypes('image_uri', ['bool', 'string', 'callable']);
 
         $imageUriNormalizer = function (Options $options, $imageUri) {
             return null !== $imageUri ? $imageUri : $options['download_uri'];
@@ -52,19 +52,18 @@ class VichImageType extends VichFileType
     {
         $object = $form->getParent()->getData();
         $view->vars['object'] = $object;
+        $view->vars['image_uri'] = null;
 
         if ($object) {
-            $view->vars['download_uri'] = $this->resolveUriOption($options['download_uri'], $object, $form);
-            // required for BC
-            //TODO: remove for 2.0
-            $view->vars['show_download_link'] = !empty($view->vars['download_uri']);
             if ($options['imagine_pattern']) {
                 if (!$this->cacheManager) {
                     throw new \RuntimeException('LiipImagineBundle must be installed and configured for using "imagine_pattern" option.');
                 }
 
                 $uri = $this->storage->resolveUri($object, $form->getName());
-                $view->vars['image_uri'] = $this->cacheManager->getBrowserPath($uri, $options['imagine_pattern']);
+                if ($uri) {
+                    $view->vars['image_uri'] = $this->cacheManager->getBrowserPath($uri, $options['imagine_pattern']);
+                }
             } else {
                 $view->vars['image_uri'] = $this->resolveUriOption($options['image_uri'], $object, $form);
             }
@@ -73,6 +72,11 @@ class VichImageType extends VichFileType
                 $view->vars,
                 $this->resolveDownloadLabel($options['download_label'], $object, $form)
             );
+
+            $view->vars['download_uri'] = $this->resolveUriOption($options['download_uri'], $object, $form);
+            // required for BC
+            //TODO: remove for 2.0
+            $view->vars['show_download_link'] = !empty($view->vars['download_uri']);
         }
     }
 

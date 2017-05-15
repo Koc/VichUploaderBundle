@@ -11,6 +11,7 @@ use Symfony\Component\PropertyAccess\PropertyPath;
 use Vich\TestBundle\Entity\Product;
 use Vich\UploaderBundle\Form\Type\VichFileType;
 use Vich\UploaderBundle\Handler\UploadHandler;
+use Vich\UploaderBundle\Mapping\PropertyMapping;
 use Vich\UploaderBundle\Mapping\PropertyMappingFactory;
 use Vich\UploaderBundle\Storage\StorageInterface;
 
@@ -50,10 +51,29 @@ class VichFileTypeTest extends TestCase
         ];
     }
 
+    public function testEmptyDownloadLinkDoNotThrowsDeprecation()
+    {
+        $optionsResolver = new OptionsResolver();
+
+        $storage = $this->createMock(StorageInterface::class);
+        $uploadHandler = $this->createMock(UploadHandler::class);
+        $propertyMappingFactory = $this->createMock(PropertyMappingFactory::class);
+        $propertyAccessor = $this->createMock(PropertyAccessor::class);
+
+        $testedType = static::TESTED_TYPE;
+
+        $type = new $testedType($storage, $uploadHandler, $propertyMappingFactory, $propertyAccessor);
+
+        $type->configureOptions($optionsResolver);
+
+        $resolved = $optionsResolver->resolve([]);
+        $this->assertArraySubset(['download_uri' => true, 'download_link' => null], $resolved);
+    }
+
     /**
      * @dataProvider buildViewDataProvider
      */
-    public function testBuildView($object, array $options, array $vars)
+    public function testBuildView(Product $object, array $options, array $vars)
     {
         $field = 'image';
 
@@ -82,7 +102,31 @@ class VichFileTypeTest extends TestCase
 
         $uploadHandler = $this->createMock(UploadHandler::class);
         $propertyMappingFactory = $this->createMock(PropertyMappingFactory::class);
+
         $propertyAccessor = $this->createMock(PropertyAccessor::class);
+
+        if (isset($options['download_label']) && true === $options['download_label']) {
+            $mapping = $this->createMock(PropertyMapping::class);
+            $mapping
+                ->expects($this->once())
+                ->method('readProperty')
+                ->with($object, 'originalName')
+                ->will($this->returnValue($object->getImageOriginalName()));
+
+            $propertyMappingFactory
+                ->expects($this->once())
+                ->method('fromField')
+                ->with($object, $field)
+                ->will($this->returnValue($mapping));
+        }
+
+        if (isset($options['download_label']) && $options['download_label'] instanceof PropertyPath) {
+            $propertyAccessor
+                ->expects($this->once())
+                ->method('getValue')
+                ->with($object, $options['download_label'])
+                ->will($this->returnValue($object->getTitle()));
+        }
 
         $testedType = static::TESTED_TYPE;
 

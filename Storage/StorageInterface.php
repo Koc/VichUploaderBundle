@@ -48,7 +48,7 @@ interface StorageInterface
      * @param string       $fieldName The field to use
      * @param string       $className The object's class. Mandatory if $obj can't be used to determine it
      *
-     * @return string The uri
+     * @return string|null The uri or null if file not stored
      */
     public function resolveUri($obj, $fieldName, $className = null);
 
@@ -60,7 +60,7 @@ interface StorageInterface
      * @param string       $fieldName The field to use
      * @param string       $className The object's class. Mandatory if $obj can't be used to determine it
      *
-     * @return resource The resolved resource
+     * @return resource|null The resolved resource or null if file not stored
      */
     public function resolveStream($obj, $fieldName, $className = null);
 }
