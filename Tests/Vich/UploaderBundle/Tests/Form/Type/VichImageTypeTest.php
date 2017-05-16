@@ -50,7 +50,7 @@ class VichImageTypeTest extends VichFileTypeTest
                 ],
                 [
                     'object' => $object,
-                    'download_uri' => 'resolved-uri',
+                    'download_uri' => false,
                     'download_label' => 'download',
                     'image_uri' => 'resolved-uri',
                     'show_download_link' => false,

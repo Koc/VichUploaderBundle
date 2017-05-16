@@ -125,11 +125,18 @@ class DownloadHandlerTest extends TestCase
             ->with($this->object, 'originalName')
             ->will($this->returnValue($this->object->getImageOriginalName()));
 
+        $file = $this->getUploadedFileMock();
+
         $this->mapping
             ->expects($this->once())
             ->method('getFile')
             ->with($this->object)
-            ->will($this->returnValue('something not null'));
+            ->will($this->returnValue($file));
+
+        $file
+            ->expects($this->once())
+            ->method('getMimeType')
+            ->will($this->returnValue(null));
 
         $this->storage
             ->expects($this->once())
