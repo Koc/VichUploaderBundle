@@ -5,8 +5,6 @@ namespace Vich\UploaderBundle\Metadata;
 use Metadata\AdvancedMetadataFactoryInterface;
 
 /**
- * MetadataReader.
- *
  * Exposes a simple interface to read objects metadata.
  *
  * @author Kévin Gomez <contact@kevingomez.fr>
@@ -78,6 +76,11 @@ class MetadataReader
     public function getUploadableFields($class, $mapping = null)
     {
         $metadata = $this->reader->getMetadataForClass($class);
+
+        if ($metadata === null) {
+            return array();
+        }
+
         $uploadableFields = [];
 
         foreach ($metadata->classMetadata as $classMetadata) {
