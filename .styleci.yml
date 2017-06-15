@@ -1,0 +1,5 @@
+preset: symfony
+
+enabled:
+  - ordered_imports
+  - short_array_syntax
